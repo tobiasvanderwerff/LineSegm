@@ -93,6 +93,8 @@ int main (int argc, char* argv[]) {
 		typedef Map::Node Node;
 		vector<vector<Node>> paths;
 		Mat image_path = map.grid.clone();
+		Mat image_path_original = map.grid.clone();
+		int n_lines = 0;
 		for (vector<int>::iterator itr = lines.begin(); itr != lines.end(); itr++) {
 
 			clock_t _start = clock();
@@ -116,12 +118,23 @@ int main (int argc, char* argv[]) {
 
 			vector<Node> path = reconstruct_path(start, goal, parents);
 			draw_path(image_path, path);
+
+			// Segment the found text lines and save them as seperate images.
+			if (paths.size() >= 1) {  // use upper and lower boundary for segmentation
+				segment_text_line(image_path_original, n_lines++, path, paths.back());
+			} else {  // use only lower bound for first line
+				segment_text_line(image_path_original, n_lines++, true, path);
+			}
+
 			paths.push_back(path);
 
 			clock_t _finish = clock();
 
 			cout << " ==> path found in " + to_string(double(_finish - _start) / CLOCKS_PER_SEC) << " s" << endl;
 		}
+
+		// Segment the last text line.
+		segment_text_line(image_path_original, n_lines, false, paths.back());
 
 		cout << "\n- Segmenting lines and saving images.." << endl;
 		line_segmentation(bw, paths, filename);

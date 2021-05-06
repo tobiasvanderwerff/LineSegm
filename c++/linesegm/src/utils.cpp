@@ -70,6 +70,133 @@ inline void draw_path (Mat& graph, vector<Node>& path) {
 }
 
 template<typename Node>
+inline void segment_above_boundary (Mat& input, vector<Node> boundary) {
+	int row, col;
+	for (auto node : boundary) {
+		tie (row, col) = node;
+		for (int i = row; i < input.rows; i++) {
+			input.at<uchar>(i, col) = (uchar) 255;
+			if (col < input.cols) {
+				input.at<uchar>(i, col + 1) = (uchar) 255;
+			}
+		}
+	}
+}
+
+template<typename Node>
+inline void segment_below_boundary (Mat& input, vector<Node> boundary) {
+	int row, col;
+	for (auto node : boundary) {
+		tie (row, col) = node;
+		for (int i = row; i >= 0; i--) {
+			input.at<uchar>(i, col) = (uchar) 255;
+			if (col < input.cols) {
+				input.at<uchar>(i, col + 1) = (uchar) 255;
+			}
+		}
+	}
+}
+
+template<typename Node>
+inline int lowest_boundary_pos(vector<Node> boundary) {
+
+	int lowest_pos, row, col;
+	for (unsigned i = 0; i < boundary.size(); i++) {
+		tie(row, col) = boundary[i];
+		if (i == 0) {
+			lowest_pos = row;
+		}
+		else if (row > lowest_pos) {
+			lowest_pos = row;
+		}
+	}
+	return lowest_pos;
+}
+
+template<typename Node>
+inline int highest_boundary_pos(vector<Node> boundary) {
+
+	int highest_pos, row, col;
+	for (unsigned i = 0; i < boundary.size(); i++) {
+		tie(row, col) = boundary[i];
+		if (i == 0) {
+			highest_pos = row;
+		}
+		else if (row < highest_pos) {
+			highest_pos = row;
+		}
+	}
+	return highest_pos;
+}
+
+inline int highest_pixel_row(Mat& input) {
+	uchar pixel_val;
+	for (int i = 0; i < input.rows; i++) {
+		for (int j = 0; j < input.cols; j++) {
+			pixel_val = input.at<uchar>(i, j);
+			if (pixel_val == (uchar) 0) {
+				return i;
+			}
+		}
+	}
+	return input.rows;
+}
+
+inline int lowest_pixel_row(Mat& input) {
+	uchar pixel_val;
+	for (int i = input.rows-1; i >= 0; i--) {
+		for (int j = input.cols-1; j >= 0; j--) {
+			pixel_val = input.at<uchar>(i, j);
+			if (pixel_val == (uchar) 0) {
+				return i;
+			}
+		}
+	}
+	return 0;
+}
+
+inline Mat extract_bounding_box(Mat& input, int x, int y, int width, int height) {
+	Mat ROI(input, Rect(x, y, width, height));
+	Mat output;
+	ROI.copyTo(output);
+	return output;
+}
+
+
+template<typename Node>
+inline void segment_text_line (Mat& input, int line_id, vector<Node> lower, vector<Node> upper) {
+	Mat output = input.clone();
+
+	int highest_pos = highest_boundary_pos(upper);
+	int lowest_pos = lowest_boundary_pos(lower);
+
+	segment_above_boundary(output, lower);
+	segment_below_boundary(output, upper);
+
+	Mat crop = extract_bounding_box(output, 0, highest_pos, input.cols, lowest_pos-highest_pos);
+	imwrite("data/line_" + to_string(line_id) + ".jpg", crop*255);
+}
+
+template<typename Node>
+inline void segment_text_line (Mat& input, int line_id, bool boundary_is_lower, vector<Node> boundary) {
+	Mat output = input.clone();
+
+	if (boundary_is_lower) {
+		int lowest_pos = lowest_boundary_pos(boundary);
+		int upper_bound = highest_pixel_row(output);
+		segment_above_boundary(output, boundary);
+		output = extract_bounding_box(output, 0, upper_bound, input.cols, lowest_pos-upper_bound);
+	} else {
+		int highest_pos = highest_boundary_pos(boundary);
+		int lower_bound = lowest_pixel_row(output);
+		segment_below_boundary(output, boundary);
+		output = extract_bounding_box(output, 0, highest_pos, input.cols, lower_bound-highest_pos);
+	}
+
+	imwrite("data/line_" + to_string(line_id) + ".jpg", output*255);
+}
+
+template<typename Node>
 inline Mat segment_line (Mat& input, vector<Node> path){
 
 	Mat output = input.clone();
