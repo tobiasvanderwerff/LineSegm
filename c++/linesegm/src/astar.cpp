@@ -147,7 +147,8 @@ inline double compute_cost (const Graph& graph, typename Graph::Node current, ty
 	if (strcmp(dataset.c_str(), "MLS") == 0) {
 		return 2.5*v + 1*n + 50*m + 130*d + 0*d2;
 	} else {
-		return 3*v + 1*n + 50*m + 150*d + 50*d2;
+		// return 3*v + 1*n + 50*m + 150*d + 50*d2;
+		return 0.5*v + 1*n + 50*m + 150*d + 50*d2;
 	}
 }
 
