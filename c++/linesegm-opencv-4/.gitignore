@@ -1,0 +1,14 @@
+/Debug/
+
+/data/
+
+/build/
+
+/bin/
+
+linesegm
+
+*.*~
+
+makefile
+
