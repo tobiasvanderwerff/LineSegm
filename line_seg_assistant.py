@@ -118,7 +118,7 @@ if __name__ == '__main__':
 	segment_all_scrolls(version)
 	try:
 		# `src` is the target (existed already), and `dst` is the newly-created symbolic link
-		src: str = os.path.join('c++', 'linesegm%s' % ('-opencv-v4' if ver == OpenCVVersion.VERSION_4 else '',), 'data')
+		src: str = os.path.join('c++', 'linesegm%s' % ('-opencv-v4' if version == OpenCVVersion.VERSION_4 else '',), 'data')
 		os.symlink(src, 'data-link', target_is_directory=True)
 	except OSError:
 		raise OSError('Could not create a symbolic link to the data. Aborting.')
