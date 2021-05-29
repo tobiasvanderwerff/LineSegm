@@ -123,9 +123,9 @@ int main (int argc, char* argv[]) {
 
 			// Segment the found text lines and save them as seperate images.
 			if (paths.size() >= 1) {  // use upper and lower boundary for segmentation
-				segment_text_line(image_path_original, "data/", n_lines++, path, paths.back());
+				segment_text_line(image_path_original, "data/", ++n_lines, path, paths.back());
 			} else {  // use only lower bound for first line
-				segment_text_line(image_path_original, "data/", n_lines++, true, path);
+				segment_text_line(image_path_original, "data/", ++n_lines, true, path);
 			}
 
 			paths.push_back(path);
@@ -136,8 +136,7 @@ int main (int argc, char* argv[]) {
 		}
 
 		// Segment the last text line.
-		segment_text_line(image_path_original, "data/", n_lines, false, paths.back());
-
+		segment_text_line(image_path_original, "data/", ++n_lines, false, paths.back());
 
 		if (flag_stats) {
 			cout << "- Computing statistics.." << endl;
