@@ -10,3 +10,4 @@ data/*
 # symbolic link for later processing
 data-link
 
+tags
