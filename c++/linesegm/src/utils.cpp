@@ -162,9 +162,18 @@ inline Mat extract_bounding_box(Mat& input, int x, int y, int width, int height)
 	return output;
 }
 
+inline void ensure_directory_exists(string dir_path) {
+	struct stat st = {0};
+
+	if (stat(dir_path.c_str(), &st) == -1) {
+		    mkdir(dir_path.c_str(), 0755);
+		    cout << "\n- Created folder ";
+		    cout << dir_path << endl;
+		}	
+}
 
 template<typename Node>
-inline void segment_text_line (Mat& input, string filename, int line_id, vector<Node> lower, vector<Node> upper) {
+inline void segment_text_line (Mat& input, string out_dir, int line_id, vector<Node> lower, vector<Node> upper) {
 	Mat output = input.clone();
 
 	int highest_pos = highest_boundary_pos(upper);
@@ -174,11 +183,11 @@ inline void segment_text_line (Mat& input, string filename, int line_id, vector<
 	segment_below_boundary(output, upper);
 
 	output = extract_bounding_box(output, 0, highest_pos, input.cols, lowest_pos-highest_pos);
-	imwrite(filename + "_line_" + to_string(line_id) + ".jpg", output*255);
+	imwrite(out_dir + "line_" + to_string(line_id) + ".jpg", output*255);
 }
 
 template<typename Node>
-inline void segment_text_line (Mat& input, string filename, int line_id, bool boundary_is_lower, vector<Node> boundary) {
+inline void segment_text_line (Mat& input, string out_dir, int line_id, bool boundary_is_lower, vector<Node> boundary) {
 	Mat output = input.clone();
 
 	if (boundary_is_lower) {
@@ -193,7 +202,7 @@ inline void segment_text_line (Mat& input, string filename, int line_id, bool bo
 		output = extract_bounding_box(output, 0, highest_pos, input.cols, lower_bound-highest_pos);
 	}
 
-	imwrite(filename + "_line_" + to_string(line_id) + ".jpg", output*255);
+	imwrite(out_dir + "line_" + to_string(line_id) + ".jpg", output*255);
 }
 
 template<typename Node>
