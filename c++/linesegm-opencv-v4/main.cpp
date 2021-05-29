@@ -61,6 +61,8 @@ int main (int argc, char* argv[]) {
 	cout << "##          LINE SEGMENTATION         ##" << endl;
 	cout << "########################################" << endl;
 
+	ensure_directory_exists("data/");
+
 	for (string filename : filenames) {
 
 		cout << "\n===============================================================" << endl;
@@ -121,9 +123,9 @@ int main (int argc, char* argv[]) {
 
 			// Segment the found text lines and save them as seperate images.
 			if (paths.size() >= 1) {  // use upper and lower boundary for segmentation
-				segment_text_line(image_path_original, n_lines++, path, paths.back());
+				segment_text_line(image_path_original, "data/", ++n_lines, path, paths.back());
 			} else {  // use only lower bound for first line
-				segment_text_line(image_path_original, n_lines++, true, path);
+				segment_text_line(image_path_original, "data/", ++n_lines, true, path);
 			}
 
 			paths.push_back(path);
@@ -134,18 +136,14 @@ int main (int argc, char* argv[]) {
 		}
 
 		// Segment the last text line.
-		segment_text_line(image_path_original, n_lines, false, paths.back());
-
-		cout << "\n- Segmenting lines and saving images.." << endl;
-		line_segmentation(bw, paths, filename);
-
+		segment_text_line(image_path_original, "data/", ++n_lines, false, paths.back());
 
 		if (flag_stats) {
 			cout << "- Computing statistics.." << endl;
 			compute_statistics(filename);
 		}
 
-
+		cout << "\n- Lines segmented and images saved." << endl;
 
 		clock_t end_for = clock();
 		double elapsed_secs = double(end_for - begin_for) / CLOCKS_PER_SEC;

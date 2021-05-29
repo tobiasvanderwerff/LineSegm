@@ -162,9 +162,18 @@ inline Mat extract_bounding_box(Mat& input, int x, int y, int width, int height)
 	return output;
 }
 
+inline void ensure_directory_exists(string dir_path) {
+	struct stat st = {0};
+
+	if (stat(dir_path.c_str(), &st) == -1) {
+			    mkdir(dir_path.c_str(), 0755);
+			    cout << "\n- Created folder ";
+			    cout << dir_path << endl;
+			}	
+}
 
 template<typename Node>
-inline void segment_text_line (Mat& input, int line_id, vector<Node> lower, vector<Node> upper) {
+inline void segment_text_line (Mat& input, string out_dir, int line_id, vector<Node> lower, vector<Node> upper) {
 	Mat output = input.clone();
 
 	int highest_pos = highest_boundary_pos(upper);
@@ -173,12 +182,12 @@ inline void segment_text_line (Mat& input, int line_id, vector<Node> lower, vect
 	segment_above_boundary(output, lower);
 	segment_below_boundary(output, upper);
 
-	Mat crop = extract_bounding_box(output, 0, highest_pos, input.cols, lowest_pos-highest_pos);
-	imwrite("data/line_" + to_string(line_id) + ".jpg", crop*255);
+	output = extract_bounding_box(output, 0, highest_pos, input.cols, lowest_pos-highest_pos);
+	imwrite(out_dir + "line_" + to_string(line_id) + ".jpg", output*255);
 }
 
 template<typename Node>
-inline void segment_text_line (Mat& input, int line_id, bool boundary_is_lower, vector<Node> boundary) {
+inline void segment_text_line (Mat& input, string out_dir, int line_id, bool boundary_is_lower, vector<Node> boundary) {
 	Mat output = input.clone();
 
 	if (boundary_is_lower) {
@@ -193,7 +202,7 @@ inline void segment_text_line (Mat& input, int line_id, bool boundary_is_lower, 
 		output = extract_bounding_box(output, 0, highest_pos, input.cols, lower_bound-highest_pos);
 	}
 
-	imwrite("data/line_" + to_string(line_id) + ".jpg", output*255);
+	imwrite(out_dir + "line_" + to_string(line_id) + ".jpg", output*255);
 }
 
 template<typename Node>
@@ -233,44 +242,6 @@ inline string infer_dataset (string filename) {
 		return "NULL";
 	}
 }
-
-template<typename Node>
-inline void line_segmentation (Mat& input, vector<vector<Node>> paths, string filename) {
-
-	string dataset = infer_dataset(filename);
-
-	string rem1 = "data/" + dataset + "/images/";
-	string rem2 = ".jpg";
-	string repl = "";
-	strreplace(filename, rem1, repl);
-	strreplace(filename, rem2, repl);
-
-
-	string folder_segmented = "data/" + dataset + "/detected/";
-	string folder_lines = folder_segmented + filename + "/";
-
-	struct stat st = {0};
-
-	if (stat(folder_lines.c_str(), &st) == -1) {
-	    mkdir(folder_lines.c_str(), 0755);
-	    cout << "- Created folder ";
-	    cout << folder_lines.c_str() << endl;
-	}
-
-	vector<Mat> segmented_images;
-	for (auto path : paths) {
-		segmented_images.push_back(segment_line(input, path));
-	}
-	segmented_images.push_back(input);
-
-	imwrite(folder_lines + "lines_" + to_string(1) + ".jpg", segmented_images[0]);
-	for (unsigned int i = 1; i < segmented_images.size(); i++) {
-		Mat output = abs(255 - segmented_images[i]) - abs(255 - segmented_images[i - 1]);
-		imwrite(folder_lines + "lines_" + to_string(i+1) + ".jpg", abs(255 - output));
-	}
-
-}
-
 
 inline vector<string> read_folder (const char* folder) {
 	DIR *pdir = NULL;
