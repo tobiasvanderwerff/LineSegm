@@ -104,18 +104,18 @@ def integralMean(im, rows, cols, window):
 
 def resize_dataset(folder, new_folder):
     filenames = listdir(folder)
-    print "Resizing " + str(len(filenames)) + " images."
+    print("Resizing " + str(len(filenames)) + " images.")
     for filename in filenames:
-        print "\t" + filename
+        print("\t" + filename)
         image = cv2.imread(folder + filename)
         image = cv2.resize(image, (0,0), fx=0.5, fy=0.5)
         cv2.imwrite(new_folder + filename, image)
         
 def crop_dataset(folder, new_folder):
     filenames = listdir(folder)
-    print "Cropping " + str(len(filenames)) + " images."
+    print("Cropping " + str(len(filenames)) + " images.")
     for filename in filenames:
-        print "\t- " + filename
+        print("\t- " + filename)
         image = cv2.imread(folder + filename)
         image = image[250:2110, 100:1560]
         cv2.imwrite(new_folder + filename, image)       
@@ -126,12 +126,12 @@ def crop_dataset(folder, new_folder):
 
 def parse_groundtruth(dataset_folder, xml_folder, lines_folder):
     
-    print '######################################################'
-    print '##    CREATING GROUNDTRUTH FOR SAINTGALL DATASET    ##'
-    print '######################################################\n'
+    print('######################################################')
+    print('##    CREATING GROUNDTRUTH FOR SAINTGALL DATASET    ##')
+    print('######################################################\n')
     
     xmls = listdir(xml_folder)
-    print "Parsing " + str(len(xmls)) + " xml files.\n"
+    print("Parsing " + str(len(xmls)) + " xml files.\n")
     
     for i in range(0, len(xmls)):
         
@@ -141,7 +141,7 @@ def parse_groundtruth(dataset_folder, xml_folder, lines_folder):
         root = parser.parse(xml_folder + xml).getroot()
         filename = root[1].attrib.get("imageFilename").replace("png", "jpg")
         
-        print "## " + str(i + 1) + " ## " + xml + " ==> " + filename
+        print("## " + str(i + 1) + " ## " + xml + " ==> " + filename)
         
         # load image
         image = cv2.imread(dataset_folder + filename, 0)
@@ -180,5 +180,4 @@ parse_groundtruth("data/saintgall/images/", "data/saintgall/groundtruth/xml/", "
 
 #crop_dataset("data/saintgall/original_images/", "data/saintgall/images/") 
  
-print '\n - Elapsed time: ' + str((timer() - begin)) + ' s\n'
-
+print('\n - Elapsed time: ' + str((timer() - begin)) + ' s\n')
