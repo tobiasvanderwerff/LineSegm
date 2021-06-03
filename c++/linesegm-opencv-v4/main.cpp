@@ -73,14 +73,14 @@ int main (int argc, char* argv[]) {
 		string dataset_name = infer_dataset(filename);
 		cout << "Database " << dataset_name << endl;
 
-		Mat im = imread(filename, 0);
-		Mat imbw (im.rows, im.cols, CV_8U);
+		Mat imbw = imread(filename, 0);
+		//Mat imbw (im.rows, im.cols, CV_8U);
 
 		cout << "- Thresholding.." << endl;
-		binarize(im, imbw, 20, 128, 0.4);
+		//binarize(im, imbw, 20, 128, 0.4);
 		Mat bw = imbw.clone();
-		Mat element = getStructuringElement( MORPH_RECT, Size(5, 5), Point(2, 2));
-		morphologyEx(imbw, imbw, 2, element );
+		//Mat element = getStructuringElement( MORPH_RECT, Size(5, 5), Point(2, 2));
+		//morphologyEx(imbw, imbw, 2, element );
 		imwrite("data/bw.jpg", bw);
 
 		cout << "- Detecting lines location..";
