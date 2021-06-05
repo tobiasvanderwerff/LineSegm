@@ -195,9 +195,9 @@ class LineSegmentationAssistant:
 				if inform:
 					print('\t\t(to be deleted)')
 				self.remove_file_if_existent(os.path.join(self.data_path, drc))
-		for drc in os.listdir(self.data_path):
+		for index, drc in enumerate(os.listdir(self.data_path)):
 			if inform:
-				print('--- WORKING ON SCROLL \'%s\' ---' % (drc,))
+				print('--- WORKING ON SCROLL \'%s\' (%3d/%3d) ---' % (drc, index + 1, len(os.listdir(self.data_path))))
 			self.segment_single_scroll(drc, inform)
 			self.clean_up_data_dir(drc)
 		if inform:
