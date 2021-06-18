@@ -60,7 +60,8 @@ inline vector<int> projection_analysis (Mat& im) {
 	minMaxLoc(hist, &min, &max);
 
 	hist = hist / max;
-	double delta = hist_mean / max + 0.6*(hist_std / max); //0.6 is to try to detect lines that are short
+
+	double delta = (hist_mean / max) + 0.66 * (hist_std / max);  /* was: +0.6, -0.1 */
 	// double epsilon = 0.015; //to compensate error in peak detection for some cases
 	return detect_peaks (hist, delta);
 }

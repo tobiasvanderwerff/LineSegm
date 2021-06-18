@@ -1,13 +1,22 @@
 data/*
 
-*.pyc
 .project
-.pydevproject
 .cproject
 
 *.*~
 
-# symbolic link for later processing
+# Symbolic link for later processing
 data-link
 
 tags
+
+
+# Jetbrains
+.idea
+
+
+# Python
+*.pyc
+.pydevproject
+__pycache__
+
