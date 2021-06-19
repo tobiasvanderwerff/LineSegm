@@ -82,7 +82,7 @@ class LineSegmentationAssistant:
 		Ensures there exists a symbolic link from `LineSegm` to the right `data` directory.
 		"""
 		try:
-			os.symlink(self.data_path, os.path.join(self.root, 'LineSegm', 'data-link'), target_is_directory=True)
+			os.symlink(os.path.abspath(self.data_path), os.path.join(self.root, 'LineSegm', 'data-link'), target_is_directory=True)
 		except OSError:
 			raise OSError('[%s] Could not create a symbolic link to the data!' % (self.__class__.__name__,))
 
