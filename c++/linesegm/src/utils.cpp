@@ -76,7 +76,7 @@ inline void segment_above_boundary (Mat& input, vector<Node> boundary) {
 		tie (row, col) = node;
 		for (int i = row; i < input.rows; i++) {
 			input.at<uchar>(i, col) = (uchar) 255;
-			if (col < input.cols) {
+			if (col < input.cols - 1) {
 				input.at<uchar>(i, col + 1) = (uchar) 255;
 			}
 		}
@@ -90,7 +90,7 @@ inline void segment_below_boundary (Mat& input, vector<Node> boundary) {
 		tie (row, col) = node;
 		for (int i = row; i >= 0; i--) {
 			input.at<uchar>(i, col) = (uchar) 255;
-			if (col < input.cols) {
+			if (col < input.cols - 1) {
 				input.at<uchar>(i, col + 1) = (uchar) 255;
 			}
 		}
