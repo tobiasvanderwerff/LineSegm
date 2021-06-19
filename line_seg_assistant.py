@@ -59,7 +59,7 @@ class LineSegmentationAssistant:
 			raise ValueError(
 				'[%s] This version is not supported, sorry.' %
 				(self.__class__.__name__,))
-		return OpenCVVersion.VERSION_3 if selection == 'a' else OpenCVVersion.VERSION_4
+		return OpenCVVersion.VERSION_3 if selection == 'b' else OpenCVVersion.VERSION_4
 
 	def ensure_directory_exists(self, path: str) -> None:
 		if not os.path.isdir(path):
