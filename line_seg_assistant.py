@@ -20,6 +20,16 @@ class OpenCVVersion(Enum):
 	VERSION_4 = 4
 
 
+class BinarisedScrollsCopyMode(Enum):
+	"""
+	An approach to copying binarised scrolls to the `data` directory for line segmentation.
+
+	Training data should use the mode `BINARISED_JPG`, while testing data should use `NO_BINARISED_PBM`.
+	"""
+	BINARISED_JPG = 'binarised-jpg'  # check for the word 'binarised' (potentially with '-z') and file extension JPG
+	NO_BINARISED_PBM = 'pbm'  # don't check for binarised, and search for the PBM file format
+
+
 class LineSegmentationAssistant:
 	"""
 	A class that interfaces ('assists') with segmenting lines from the `LineSegm` submodule.
@@ -28,22 +38,38 @@ class LineSegmentationAssistant:
 	BLACKLISTED_PLATFORMS: Tuple[str, ...] = ('win32',)
 	CUSTOM_IMG_DIR: str = 'custom'  # pseudo scroll directory to segment own images in
 
-	def __init__(self, relative_root: str) -> None:
+	def __init__(self, relative_root: str, source_dir: str, mode: BinarisedScrollsCopyMode) -> None:
 		"""
 		Constructs a line segmentation assistant.
 
 		:param relative_root: The relative path to the `project` (project-level root) directory. E.g. `..`.
+		:param source_dir: A path from `relative_root` to the directory in which the data resides. For instance,
+			`resources/scrolls-jpg`.
+		:param mode: A mode with which to copy scrolls. See `BinarisedScrollsCopyMode` for more info.
 		"""
 		if not self.user_has_right_os():
 			raise Exception('[%s] Sorry, your OS cannot fully run this assistant.' % (self.__class__.__name__,))
 		self.opencv_ver: OpenCVVersion = self.open_cv_version_from_input()
 		self.root: str = relative_root
+		self.source_dir = source_dir
+		self.mode = mode
 		self.data_path: str = os.path.join(
 			self.root,
 			'LineSegm',
 			'c++',
 			'linesegm%s' % ('' if self.opencv_ver == OpenCVVersion.VERSION_3 else '-opencv-v4',),
 			'data')
+
+	@property
+	def ext(self) -> str:
+		if self.mode in (BinarisedScrollsCopyMode.BINARISED_JPG,):
+			return 'jpg'
+		elif self.mode in (BinarisedScrollsCopyMode.NO_BINARISED_PBM,):
+			return 'bpm'
+		else:
+			raise NotImplementedError(
+				'[%s] Mode \'%s\' is not (yet) implemented!' %
+				(self.__class__.__name__, self.mode.value))
 
 	@staticmethod
 	def user_has_right_os() -> bool:
@@ -88,25 +114,40 @@ class LineSegmentationAssistant:
 
 	def copy_binarised_scroll_to_data_directory(self, containing_dir: str, file: str) -> None:
 		"""
-		Copies a single binarised JPG scroll to the `data` directory.
+		Copies a single binarised scroll to the `data` directory.
 
 		:param containing_dir: The directory in which the target file is contained. E.g. `resources/scrolls-jpg`.
 		:param file: The name of the binarised scroll to copy. Should include the file extension, `.jpg`.
 		"""
-		file_as_dir: str = re.sub('(-binari)[sz](ed\\.jpg)', '', file).lower()
+		file_as_dir: str
+		if self.mode == BinarisedScrollsCopyMode.BINARISED_JPG:
+			file_as_dir = re.sub('(-binari)[sz](ed\\.jpg)', '', file).lower()
+		elif self.mode == BinarisedScrollsCopyMode.NO_BINARISED_PBM:
+			file_as_dir = re.sub('(\\.pbm)', '', file).lower()
+		else:
+			raise NotImplementedError(
+				'[%s] Mode \'%s\' is not (yet) supported!' %
+				(self.__class__.__name__, self.mode.value))
 		path_to_scroll: str = os.path.join(self.data_path, file_as_dir)
 		self.ensure_directory_exists(path_to_scroll)
-		su.copy(os.path.join(containing_dir, file), os.path.join(path_to_scroll, file_as_dir + os.extsep + 'jpg'))
+		su.copy(os.path.join(containing_dir, file), os.path.join(path_to_scroll, file_as_dir + os.extsep + self.ext))
 
 	def copy_binarised_scrolls_to_data_directory(self) -> None:
 		"""
 		Copies all binarised JPG scrolls present in `resources/scrolls-jpg` to the `data` directory.
 		"""
-		dir_containing_file: str = os.path.join(self.root, 'resources', 'scrolls-jpg')
+		dir_containing_file: str = os.path.join(self.root, self.source_dir)
 		for file in os.listdir(dir_containing_file):
-			# go over the scrolls and select only the binarised ones
-			if re.search('(binari)[sz](ed)', file) is not None:
-				self.copy_binarised_scroll_to_data_directory(dir_containing_file, file=file)
+			if self.mode == BinarisedScrollsCopyMode.BINARISED_JPG:
+				if re.search('(binari)[sz](ed\\.jpg)', file) is not None:
+					self.copy_binarised_scroll_to_data_directory(dir_containing_file, file=file)
+			elif self.mode == BinarisedScrollsCopyMode.NO_BINARISED_PBM:
+				if re.search('(\\.pbm)', file) is not None:
+					self.copy_binarised_scroll_to_data_directory(dir_containing_file, file=file)
+			else:
+				raise NotImplementedError(
+					'[%s] Mode \'%s\' is not (yet) supported!' %
+					(self.__class__.__name__, self.mode.value))
 
 	def prepare_resources_directory(self) -> None:
 		"""
@@ -167,7 +208,8 @@ class LineSegmentationAssistant:
 		:param inform: Whether to inform of non-error progress. Defaults to `False`.
 		"""
 		path: str = os.path.join(self.data_path, os.pardir)  # main directory of line segmentation project
-		file_path: str = os.path.join('data', scroll_dir, scroll_dir + os.extsep + 'jpg')
+		file_path: str = os.path.join('data', scroll_dir, scroll_dir + os.extsep + self.ext)
+		# TODO: Perhaps need to convert to JPG when in PBM format?
 		ret: int = os.system(
 			'cd %s; ./bin/linesegm %s%s' %
 			(
@@ -234,7 +276,10 @@ class LineSegmentationAssistant:
 
 
 if __name__ == '__main__':
-	assistant = LineSegmentationAssistant(relative_root=os.pardir)  # will be different for other scripts, of course
+	assistant = LineSegmentationAssistant(
+		relative_root=os.pardir,
+		source_dir=os.path.join('resources', 'test'),
+		mode=BinarisedScrollsCopyMode.NO_BINARISED_PBM)
 	assistant.prepare_resources_directory()
 	assistant.ensure_project_is_built(inform=False)
 	assistant.segment_all_scrolls(inform=True)
