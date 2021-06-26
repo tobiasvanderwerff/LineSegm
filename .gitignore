@@ -5,9 +5,6 @@ data/*
 
 *.*~
 
-# Symbolic link for later processing
-data-link
-
 tags
 
 
